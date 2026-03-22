@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, Sequence
 from sqlalchemy.orm import Session
 
 from src.internal.model.classes import Class
@@ -14,10 +14,10 @@ class ClassPersistence:
         return result[0] if result else None
 
     @classmethod
-    def list_classes(cls, db: Session) -> list[Class]:
+    def list_classes(cls, db: Session) -> Sequence[Class]:
         statement = select(Class)
         result = db.execute(statement)
-        return [res[0] for res in result]
+        return result.scalars().all()
 
     @classmethod
     def create_class(

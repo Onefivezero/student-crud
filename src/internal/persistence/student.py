@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, Sequence
 from sqlalchemy.orm import Session
 
 from src.internal.model.student import Student
@@ -14,10 +14,10 @@ class StudentPersistence:
         return result[0] if result else None
 
     @classmethod
-    def list_students(cls, db: Session) -> list[Student]:
+    def list_students(cls, db: Session) -> Sequence[Student]:
         statement = select(Student)
         result = db.execute(statement)
-        return [res[0] for res in result]
+        return result.scalars().all()
 
     @classmethod
     def create_student(
