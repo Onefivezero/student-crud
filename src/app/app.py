@@ -5,6 +5,10 @@ from starlette.responses import JSONResponse
 from src.app.routers.class_enrollment import class_enrollment_router
 from src.app.routers.classes import class_router
 from src.app.routers.student import student_router
+from src.internal.model.base import Base
+from src.internal.persistence import get_engine
+
+Base.metadata.create_all(bind=get_engine())
 
 app = FastAPI()
 

@@ -42,3 +42,22 @@ pytest
 ```bash
 uvicorn src.app.app:app --reload
 ```
+
+## Manual Simulation via Docker Compose
+
+If you want to test the API manually with a persistent database (without running the test suite), use Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+To stop:
+```bash
+docker compose down
+```
+
+
+## OpenAPI documentation
+
+In order to access the docs, open up the /docs endpoint in a browser after running
+the API. e.g localhost:8080/docs
