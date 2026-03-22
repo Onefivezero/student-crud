@@ -1,44 +1,32 @@
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from src.internal.model.student import Student
-from src.internal.persistence import create_session, engine
-from src.internal.util.id_generator import IDGenerator
 
 
 class StudentPersistence:
 
     @classmethod
-    def get_student(cls, id_: int) -> Student:
-        session = create_session()
-        with session:
-            statement = select(Student).where(Student.id == id_)
-            result = session.execute(statement).one()
+    def get_student(cls, db: Session, id_: int) -> Student | None:
+        statement = select(Student).where(Student.id == id_)
+        result = db.execute(statement).one_or_none()
 
-        return result[0]
+        return result[0] if result else None
 
     @classmethod
-    def list_students(cls) -> list[Student]:
-        session = create_session()
-        with session:
-            statement = select(Student)
-            result = session.execute(statement)
-            return [res[0] for res in result]
+    def list_students(cls, db: Session) -> list[Student]:
+        statement = select(Student)
+        result = db.execute(statement)
+        return [res[0] for res in result]
 
     @classmethod
     def create_student(
         cls,
+        db: Session,
         name: str,
         surname: str
     ) -> Student:
-        student = Student(
-            id=IDGenerator.generate_unique_id(),
-            name=name,
-            surname=surname,
-        )
-
-        session = create_session()
-        with session:
-            session.add(student)
-            session.commit()
-
-        return student
+        new_student = Student(name=name, surname=surname)
+        db.add(new_student)
+        db.flush()
+        return new_student

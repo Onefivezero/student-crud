@@ -1,5 +1,2 @@
-from sqlalchemy.orm import DeclarativeBase
-
-
-class Base(DeclarativeBase):
-    pass
+from src.internal.model.student import Student
+from src.internal.model.base import Base

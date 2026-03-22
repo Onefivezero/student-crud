@@ -1,31 +1,31 @@
 from starlette import status
-from starlette.testclient import TestClient
-
-from src.app.app import app
 from src.internal.model.student import Student
-from test.app.student import TestBase
 
 
-class TestCreateStudentAPI(TestBase):
-    client = TestClient(app=app)
-
-    def test__create_student_api(self):
-        student = {
+class TestCreateStudentAPI:
+    def test_create_student_api(self, client, db_session):
+        student_data = {
             "name": "John",
             "surname": "Doe",
         }
 
-        response = self.client.post(url="/students", json=student)
-        self.assertEqual(status.HTTP_200_OK, response.status_code, response.content)
+        response = client.post(url="/students", json=student_data)
+
+        assert response.status_code == status.HTTP_200_OK
 
         response_dict = response.json()
-        self.assertEqual({
-            "id": response_dict["id"],
-            "name": student["name"],
-            "surname": student["surname"],
-        }, response.json())
 
-        db_result = self.session.get(Student, response_dict["id"])
-        self.assertEqual(response_dict["id"], db_result.id)
-        self.assertEqual(response_dict["name"], db_result.name)
-        self.assertEqual(response_dict["surname"], db_result.surname)
+        expected_student_data = {
+            **student_data,
+            "id": response_dict["id"]
+        }
+
+        assert expected_student_data == response_dict
+
+        db_result = db_session.get(Student, response_dict["id"])
+
+        assert {
+            "id": db_result.id,
+            "name": db_result.name,
+            "surname": db_result.surname
+        } == response_dict

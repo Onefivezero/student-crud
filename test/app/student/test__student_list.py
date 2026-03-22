@@ -1,38 +1,27 @@
 from starlette import status
-from starlette.testclient import TestClient
-
-from src.app.app import app
 from src.internal.model.student import Student
-from src.internal.persistence.student import StudentPersistence
-from test.app.student import TestBase
 
 
-class TestListStudentsAPI(TestBase):
-    client = TestClient(app=app)
+class TestListStudentsAPI:
 
-    def test__create_student_api(self):
-        full_names = (
-            ("John", "Doe"),
-            ("Jane", "Smith"),
-            ("Matt", "Baker"),
-        )
-        students = []
-        for name, surname in full_names:
-            student = StudentPersistence.create_student(name=name, surname=surname)
-            students.append(student)
+    def test_list_all_students_returns_correct_data(self, client, db_session):
+        s1 = Student(name="John", surname="Doe")
+        s2 = Student(name="Jane", surname="Smith")
+        db_session.add_all([s1, s2])
+        db_session.flush()
 
-        response = self.client.get(url="/students")
-        self.assertEqual(status.HTTP_200_OK, response.status_code, response.content)
+        response = client.get("/students")
 
-        response_dict = response.json()
-        self.assertCountEqual(
-            [
-                {
-                    "id": student.id,
-                    "name": student.name,
-                    "surname": student.surname,
-                }
-                for student in students
-            ],
-            response_dict
-        )
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+
+        assert data == [
+            {"id": s1.id, "name": "John", "surname": "Doe"},
+            {"id": s2.id, "name": "Jane", "surname": "Smith"},
+        ]
+
+    def test_list_students_returns_empty_when_no_records(self, client):
+        response = client.get("/students")
+
+        assert response.status_code == 200
+        assert response.json() == []
